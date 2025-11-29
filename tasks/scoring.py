@@ -20,8 +20,8 @@ def parse_due_date(due_date_str):
 def build_dependents_map(tasks):
     dependents_map = {}
     for task in tasks:
-        task_id = task.id or task.title
-        deps = task.dependencies or []
+        task_id = task.get("id") or task.get("title") or None
+        deps = task.get("dependencies") or []
         for dep in deps:
             dependents_map[dep] = dependents_map.get(dep, 0) + 1
     return dependents_map
