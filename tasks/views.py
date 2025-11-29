@@ -66,8 +66,19 @@ def analyze_view(request):
         return bad_request(f"Server error: {str(e)}")
 
 
-@require_http_methods(["GET"])
+@csrf_exempt
 def suggest_view(request):
+    # Handle OPTIONS for CORS preflight
+    if request.method == "OPTIONS":
+        response = JsonResponse({})
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
+    
+    # Only allow GET
+    if request.method != "GET":
+        return JsonResponse({"success": False, "message": f"Method {request.method} not allowed. Only GET is supported."}, status=405)
     
     try:
         strategy = request.GET.get("strategy", STRATEGY_SMART)
@@ -89,11 +100,15 @@ def suggest_view(request):
         top3 = result["tasks"][:3]
        
 
-        return JsonResponse({
+        response = JsonResponse({
             "success": True,
             "strategy": strategy,
             "today": str(date.today()),
             "suggested_tasks": top3,
         })
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
     except Exception as e:
         return bad_request(str(e))
