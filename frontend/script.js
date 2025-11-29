@@ -8,6 +8,7 @@ const taskForm = document.getElementById("taskForm");
 const jsonInput = document.getElementById("jsonInput");
 const loadJsonBtn = document.getElementById("loadJsonBtn");
 const analyzeBtn = document.getElementById("analyzeBtn");
+const suggestBtn = document.getElementById("suggestBtn");
 const strategySelect = document.getElementById("strategy");
 const taskListEl = document.getElementById("taskList");
 const statusEl = document.getElementById("status");
@@ -155,6 +156,78 @@ analyzeBtn.addEventListener("click", function () {
       alert(
         err.message ||
           "Failed to analyze tasks. Please check console for details."
+      );
+    });
+});
+
+suggestBtn.addEventListener("click", function () {
+  statusEl.textContent = "Fetching suggestions...";
+  taskListEl.innerHTML = "";
+
+  const strategy = strategySelect.value;
+  const url = `${API_BASE_URL}/api/tasks/suggest/?strategy=${encodeURIComponent(strategy)}`;
+
+  fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then(function (res) {
+      return res.text().then(function (text) {
+        if (!res.ok) {
+          let errorMsg = `HTTP ${res.status} Error`;
+          if (text) {
+            try {
+              const errorData = JSON.parse(text);
+              errorMsg = errorData.message || errorMsg;
+            } catch (e) {
+              errorMsg =
+                text.length > 200
+                  ? text.substring(0, 200) + "..."
+                  : text || errorMsg;
+            }
+          }
+          throw new Error(errorMsg);
+        }
+
+        if (!text || text.trim() === "") {
+          throw new Error("Empty response from server");
+        }
+
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error("Failed to parse JSON:", text);
+          throw new Error("Invalid JSON response from server: " + e.message);
+        }
+      });
+    })
+    .then(function (data) {
+      if (!data.success) {
+        throw new Error(data.message || "Failed to get suggestions");
+      }
+
+      const suggestedTasks = data.suggested_tasks || [];
+      const strategy = data.strategy || strategySelect.value;
+      const today = data.today || "";
+
+      if (suggestedTasks.length === 0) {
+        statusEl.textContent = "No tasks found in database.";
+        taskListEl.innerHTML =
+          "<p style='color: #999; padding: 16px;'>No tasks available in the database. Please add tasks first.</p>";
+        return;
+      }
+
+      statusEl.textContent = `Top 3 Suggestions (Strategy: ${strategy}${today ? ", Today: " + today : ""})`;
+      renderAnalyzedTasks(suggestedTasks);
+    })
+    .catch(function (err) {
+      console.error("Error details:", err);
+      statusEl.textContent = "Failed to get suggestions.";
+      alert(
+        err.message ||
+          "Failed to get suggestions. Please check console for details."
       );
     });
 });

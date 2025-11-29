@@ -58,6 +58,14 @@ body {
     background: #2d3898;
   }
   
+  .suggest-btn {
+    background: #43a047;
+  }
+  
+  .suggest-btn:hover {
+    background: #388e3c;
+  }
+  
   .divider {
     text-align: center;
     margin: 10px 0;
