@@ -46,7 +46,7 @@ Before you start, make sure you have:
 Open your terminal (Command Prompt on Windows, Terminal on Mac/Linux) and go to the project directory:
 
 ```bash
-cd "C:\Users\K SIDDHARTH\OneDrive\Desktop\Task Analyzer"
+cd (your folder name)
 ```
 
 _Note: If you're on a different computer, adjust the path to wherever you saved this project._
